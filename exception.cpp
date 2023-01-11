@@ -21,13 +21,89 @@ exception::exception()
 std:: vector<std::pair<QString, QString>> db;
 std:: vector<std::pair<int, QString>> rec;
 
+
+void registration::read_rec()
+{
+    int _userRecord ;
+    QString _login ;
+    QFile fileOut("record.json");
+   if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
+   {
+
+        QJsonDocument json= QJsonDocument().fromJson(fileOut.readAll());
+        qDebug() << "read rec is open";
+
+        QJsonArray arrayJson = json.array();
+        for (int i=0; i < arrayJson.size();i++)
+        {
+         qDebug() << arrayJson[i];
+        QJsonObject jobj = arrayJson[i].toObject();
+        QJsonValue    userRecord = jobj["_userRecord"];
+        QJsonValue    login = jobj["login"];
+        _login = login.toString();
+        _userRecord = userRecord.toInt();
+        qDebug() << _login;
+        qDebug() << _userRecord;
+
+          rec.push_back({_userRecord, _login});
+
+        }
+    }
+
+  fileOut.close();
+}
+
+
+void registration::read_db()
+{
+    QString _login ;
+    QString _password ;
+    QFile fileOut("Baza.json");
+   if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
+   {
+
+        QJsonDocument json= QJsonDocument().fromJson(fileOut.readAll());
+        qDebug() << "read db is open";
+
+        QJsonArray arrayJson = json.array();
+        for (int i=0; i < arrayJson.size();i++)
+        {
+         qDebug() << arrayJson[i];
+        QJsonObject jobj = arrayJson[i].toObject();
+        QJsonValue    login = jobj["login"];
+        QJsonValue    password = jobj["password"];
+     _login = login.toString();
+     _password = password.toString();
+     qDebug() << _login;
+     qDebug() << _password;
+
+          db.push_back({_login, _password});
+
+    }
+        }
+
+  fileOut.close();
+}
+
 // Function Samira
 void registration::record()  // створює вектор з рекордами
 {
-
+    int size = 0;
+    QFile fileOut("record.json");
+   if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
+   {
+       size = fileOut.size();
+       if (size == 0) {
+         // is empty
+       }
+       else
+       {
+           read_rec();
+          // removing_file();
+       }
+   }
 
     QString login = ui->lineEdit_PlayerName->text();
-    //int password ;
     int _userRecord = 0;
     rec.push_back({ _userRecord, login});
 
@@ -35,7 +111,7 @@ void registration::record()  // створює вектор з рекордам�
 void registration::Save_record() // зберігає вектор з рекордами у файл
 {
     QFile fileOut("record.json");
-    if (fileOut.open(QIODevice::WriteOnly))
+    if (fileOut.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
 
         qDebug() << "Файл существует 1";
@@ -57,10 +133,32 @@ void registration::Save_record() // зберігає вектор з рекор�
 
 }
 
+void registration::removing_file()
+{
+    QFile fileOut("Baza.json");
 
-
+    if (fileOut.open(QIODevice::WriteOnly))
+    {    if (fileOut.remove())
+        {
+            qDebug() << "file removed";
+        }
+    }
+}
 void registration::funct_registr() // створює вектор з користувачами
 {
+    int size = 0;
+    QFile fileOut("Baza.json");
+   if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
+   {
+       size = fileOut.size();
+       if (size == 0) {
+         // is empty
+       }
+       else
+       {
+           read_db();
+       }
+   }
 
     QString login = ui->lineEdit_PlayerName->text();
     QString password = ui->lineEdit_passwordCheck->text();
@@ -69,8 +167,9 @@ void registration::funct_registr() // створює вектор з корис�
 
 void registration::Save() // додає нового користувача у файл
 {
+
     QFile fileOut("Baza.json");
-    if (fileOut.open(QIODevice::WriteOnly))
+    if (fileOut.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
 
         qDebug() << "Файл существует 1";

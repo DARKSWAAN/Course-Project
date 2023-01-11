@@ -219,7 +219,7 @@ border-radius:10%;
 </string>
    </property>
    <property name="text">
-    <string>Гравець 2</string>
+    <string>Гравець 1</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="Gamer2">
@@ -241,7 +241,7 @@ padding-left: 30px;
 border-radius:10%;</string>
    </property>
    <property name="text">
-    <string>Гравець 1</string>
+    <string>Гравець 2</string>
    </property>
   </widget>
   <widget class="QLabel" name="ball">

@@ -27,17 +27,17 @@ void registration::on_playNoReg_clicked()
     this->close();
 }
 
-
+QString Users_name_reg;
 void registration::on_reg_clicked()
 {
     clickSound(isMusic);
 
-    funct_registr();
 
     QString playerName = ui->lineEdit_PlayerName->text();
     QString password = ui->lineEdit_password->text();
     QString passwordCheck = ui->lineEdit_passwordCheck->text();
     QString login;
+    Users_name_reg = playerName;
     int errorCode = ExceptionOn_reg_clicked(playerName, password, passwordCheck);
 
     Error * er;

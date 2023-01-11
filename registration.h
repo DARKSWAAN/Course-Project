@@ -39,6 +39,9 @@ private slots:
     void Save();
     void record();
     void Save_record();
+    void read_db();
+    void removing_file();
+    void read_rec();
 
 
 

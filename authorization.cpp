@@ -80,20 +80,23 @@ void authorization::on_not_reg_clicked()
 //Samira
 
 bool rightEntrancy = true;
+QString Users_name;
+
 void authorization::Entrancy()
 {
-
+    bool error = false;
     Error * ex;
     ex = new Error;
-    rightEntrancy = true;
+    //rightEntrancy = true;
     registration *reg;
     reg = new registration;
 
-    QString Login_correct;
-    QString pass_correct;
 
+    QString pass_correct;
+    QString Login_correct;
     QString login = ui->lineEdit->text();
     QString password = ui->lineEdit_2->text();
+    Users_name = login;
 
     QFile fileOut("Baza.json");
    if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
@@ -115,24 +118,17 @@ void authorization::Entrancy()
             qDebug() << Login_correct;
             qDebug() << pass_correct;
 
-            try
-            {
-                if ((Login_correct != login) || (pass_correct !=password))          // перевірка паролю та логіну
-                {
+            if (Login_correct == login && pass_correct ==password)
+                        {
+                                     error = true;
 
-                throw(505);
-                }
-            }
-
-            catch(int codeError)
-            {
-                QMessageBox::information(reg, "Помилка", "Логін чи пароль введені не вірно!");
-                ui->lineEdit_2->setText("");
-                rightEntrancy = false;
-                ex->getErrorCode(codeError);
-                ex->whatError(codeError);
-            }
+                        }
         }
+   }
+   rightEntrancy = error;
+   if (error == false)
+   {
+        QMessageBox::information(reg, "Помилка", "Логін чи пароль введені не вірно!");
    }
 
 }
@@ -177,8 +173,10 @@ void authorization::on_done_clicked()
     }
 
     Entrancy();
-    if(!rightEntrancy)
+    if(rightEntrancy == false)
+    {
         return;
+    }
 
    // Entrancy();
     gamepreparation *auth;

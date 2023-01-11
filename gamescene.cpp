@@ -2,7 +2,9 @@
 #include "ui_gamescene.h"
 #include <mainwindow.h>
 #include "registration.h"
-
+#include "authorization.h"
+#include "exception.h"
+#include "registration.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
@@ -20,7 +22,7 @@ b2Body* PlayerBody2;
 
 int player_1_Score = 0;             // Счёт первого игрока
 int player_2_Score = 0;             // Счёт второго игрока
-int ScoreToWin = 7;
+int ScoreToWin = 3;
 
 bool is_player_1_goal = false;      // true - первый (левый) игрок забил, false - второй (правый) игрок забил
 bool is_created = true;             // Создан ли мяч? true потому что в начале он создан
@@ -46,6 +48,8 @@ extern QString player2SkinPath;     // Шлях до модельки гравц
 extern QString ballSkinPath;        // Шлях до модельки м'яча
 
 extern std:: vector<std::pair<QString, QString>> db;
+extern QString Users_name;
+extern QString Users_name_reg;
 extern std:: vector<std::pair<int, QString>> rec;
 
 
@@ -122,27 +126,73 @@ GameScene::~GameScene()
     delete world;
 }
 
-void GameScene::Save_record_1() // не працює
+void GameScene::read_rec()
 {
-    if(player_1_Score == ScoreToWin)
-    {
-        for (int i = 0; i < rec.size(); i++)
-        {
-            for (int j = 0; j < db.size(); j++)
-            {
-                if (rec[i].second == db[j].first)
-                {
-                    QString login;
-                    int _userRecord;
-                    login = rec[i].second;
-                    _userRecord = rec[i].first;
-                    _userRecord = _userRecord+1;
-                    rec.push_back({ _userRecord, login});
+    int _userRecord ;
+    QString _login ;
+    QFile fileOut("record.json");
+   if( fileOut.open(QIODevice::ReadOnly | QIODevice::Text ))
+   {
 
-                }
+        QJsonDocument json= QJsonDocument().fromJson(fileOut.readAll());
+        qDebug() << "read_rec is open";
+        QJsonArray arrayJson = json.array();
+
+        for (int i=0; i < arrayJson.size();i++)
+        {
+            qDebug() << arrayJson[i];
+            QJsonObject jobj = arrayJson[i].toObject();
+            QJsonValue    userRecord = jobj["_userRecord"];
+            QJsonValue    login = jobj["login"];
+            _login = login.toString();
+            _userRecord = userRecord.toInt();
+            qDebug() << _login;
+            qDebug() << _userRecord;
+
+            if(rec.size() == 0)
+            {
+                rec.push_back({_userRecord, _login});
+                qDebug() << "rec.size == 0";
             }
         }
 
+        for (int i = 0; i < rec.size(); i++)
+        {
+            QString login;
+            int _userRecord;
+
+            if (rec[i].second == Users_name || rec[i].second == Users_name_reg)
+            {
+                login = rec[i].second;
+                _userRecord = rec[i].first;
+                _userRecord++;
+                rec.erase(rec.begin() + i);
+                qDebug() <<  Users_name;
+                rec.push_back({ _userRecord, login});
+                break;
+            }
+        }
+     }
+
+    Save_record();
+    QApplication::quit();
+    fileOut.close();
+}
+void GameScene::Save_record() // зберігає вектор з рекордами у файл
+{
+    QFile fileOut("record.json");
+    if (fileOut.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "Save_record is open";
+        QJsonArray arrayJson ;
+        for (int i = 0; i < rec.size(); i++)
+        {
+            QJsonObject jobj;
+            jobj.insert("_userRecord",QJsonValue::fromVariant(rec[i].first));
+            jobj.insert("login",QJsonValue::fromVariant(rec[i].second));
+            arrayJson.append(jobj);
+        }
+         fileOut.write(QJsonDocument(arrayJson).toJson(QJsonDocument::Indented));
     }
 
 }
@@ -150,6 +200,8 @@ void GameScene::Save_record_1() // не працює
 void GameScene::score() {
 
     if(player_1_Score == ScoreToWin) {
+
+        read_rec();
         ui->scorePlayer1->setText(QString::number(player_1_Score));
         ui->winLabel->setText(QString("Gratz Team Red WIN"));
         ui->winLabel->show();
@@ -158,7 +210,7 @@ void GameScene::score() {
         is_created = true;
 
 
-        Save_record_1();
+
 
 
         // Сброс бонусів
